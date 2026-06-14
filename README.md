@@ -2,6 +2,12 @@
 
 ![项目演示动画](assets/project-demo.gif)
 
+**Language:** [中文](#中文) | [English](#english)
+
+<a id="中文"></a>
+
+## 中文
+
 这是一个面向小型足球机器人/小球车的完整实验项目：电脑运行一个 Python WebUI，同时管理小车电机、IMU 姿态、两路摄像头、YOLO/YOLOE 识别、实体摇杆、语音控制，以及无人机俯拍视角下的 `football` 到 `football gate` 自动路径控制。
 
 主入口是 `all_in_one_webui.py`。它会把网页控制、摄像头接收、YOLOE 推理、实体遥控器代理、IMU 可视化和语音方向控制整合在一个页面里。
@@ -88,7 +94,6 @@ YOLO/无人机俯拍摄像头：
 
 ## 安全注意
 
-公开上传 GitHub 前不要提交真实 Wi-Fi 密码、API Key、`.env.local`、模型权重、Android `local.properties` 或构建产物。
 
 本仓库已经把示例固件里的 Wi-Fi 改成占位符：
 
@@ -98,7 +103,7 @@ const char* WIFI_SSID = "YOUR_WIFI_SSID";
 const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 ```
 
-你需要在本地烧录前改成自己的 Wi-Fi。不要把改过真实密码的版本提交到公开仓库。
+你需要在本地烧录前改成自己的 Wi-Fi。
 
 ## 第一步：准备 Python 环境
 
@@ -413,12 +418,409 @@ All-in-One WebUI：
 - `POST /orientation?rotate=90`
 - `POST /mode?assistMode=2`
 
-## GitHub 发布前检查清单
+---
 
-- `.env.local` 不存在或未被提交。
-- 固件里没有真实 `WIFI_SSID` / `WIFI_PASSWORD`。
-- 没有提交 `*.pt`、`*.onnx`、`*.engine` 模型权重。
-- 没有提交 Android `build/`、`.gradle/`、`local.properties`。
-- 没有提交 `__pycache__/`、`.venv/`、`.DS_Store`。
-- README 中只保留示例 IP 和占位密钥。
+<a id="english"></a>
+
+## English
+
+This is a complete experimental project for a small football robot / ball robot. A Python WebUI runs on a computer and coordinates the robot motors, IMU pose, two camera streams, YOLO / YOLOE detection, a physical joystick remote, voice control, and a drone top-view path controller that drives a `football` toward a `football gate`.
+
+The recommended entry point is `all_in_one_webui.py`. It combines web control, camera receiving, YOLOE inference, remote-controller proxying, IMU visualization, voice direction control, and automatic path planning in one page.
+
+## What It Can Do
+
+- Control a two-motor robot with PWM debugging, differential joystick driving, forward / backward / turning / stop commands.
+- Read encoder feedback, RPM, and IMU pose, then visualize the robot pose in 3D in the browser.
+- Receive both the robot camera stream and an independent YOLO camera stream.
+- Detect targets such as `football` and `football gate` with YOLO / YOLOE.
+- Match the center points of the detected football and football gate boxes, then compute continuous forward / backward / left / right path commands.
+- Send path commands through the existing `/drive?throttle=&steering=` API, without changing the stick or robot firmware protocol.
+- Support a physical joystick remote, with WebUI controls to enable or disable forwarding to the robot.
+- Support voice direction control through the XIAO ESP32S3 Sense onboard microphone and DashScope Realtime ASR.
+- Provide an optional native Android controller for direct phone-to-ESP32 control.
+
+## Project Structure
+
+```text
+.
+├── all_in_one_webui.py                         # Recommended all-in-one WebUI entry point
+├── voice_drive_realtime.py                     # Voice sidecar for ESP32 microphone PCM audio
+├── voice_requirements.txt                      # Voice sidecar dependency list
+├── .env.example                                # Local environment template without real secrets
+├── esp32/
+│   └── esp32_motor_control/
+│       └── esp32_motor_control.ino             # Robot motor, encoder, IMU, camera firmware
+├── physical_remote/
+│   ├── esp32_joystick_remote/
+│   │   └── esp32_joystick_remote.ino           # Physical joystick remote firmware
+│   └── README.md                               # Standalone remote-controller notes
+├── esp32_camera_yolo8_project/
+│   ├── esp32_camera_stream/
+│   │   └── esp32_camera_stream.ino             # Independent YOLO camera firmware
+│   ├── app_camera_yolo.py                      # Earlier standalone YOLO WebUI
+│   ├── requirements.txt                        # YOLO dependencies
+│   └── README.md                               # Standalone YOLO camera notes
+└── android-controller/                         # Optional native Android controller
+```
+
+`app.py`, `app_all_in_one.py`, `physical_remote/app_remote.py`, and `esp32_camera_yolo8_project/app_camera_yolo.py` are earlier split entry points. For normal use, run `all_in_one_webui.py`.
+
+## Hardware List
+
+Core robot:
+
+- Seeed Studio XIAO ESP32S3 or XIAO ESP32S3 Sense.
+- Two DC motors with encoders.
+- Two DRV8871 DC motor driver boards.
+- External motor power supply, such as a 12V battery or power module.
+- BNO080 / BNO085 IMU module.
+- Optional XIAO ESP32S3 Sense camera for first-person robot view.
+
+Physical joystick remote:
+
+- A second XIAO ESP32S3 / XIAO ESP32S3 Sense.
+- Joystick module with `VRx`, `VRy`, and `SW` pins.
+- Optional Sense onboard PDM microphone for voice control.
+
+YOLO / drone top-view camera:
+
+- A third XIAO ESP32S3 Sense camera, or another ESP32 camera board that can run the camera firmware.
+- The camera can be mounted on a drone, a gimbal, or an overhead frame to capture the whole field.
+
+Computer side:
+
+- macOS / Windows / Linux.
+- Python 3.9+.
+- A decent CPU / GPU is recommended for YOLOE. CPU-only testing is possible at lower frame rates.
+
+### Bill of Materials
+
+| Item | Purpose | Reference Link | Suggested Qty |
+| --- | --- | --- | --- |
+| Transparent shell | Robot body / mechanical mounting | [Taobao](https://item.taobao.com/item.htm?id=772958364919) | 1 set |
+| 12V DC motor | Left and right drive wheels | [Taobao](https://item.taobao.com/item.htm?id=998689917562) | 2 |
+| 12V lithium battery | Main motor power | [Taobao](https://item.taobao.com/item.htm?id=632184698346) | 1 |
+| ESP32 board | Robot main controller, remote controller, camera node | [Taobao](https://item.taobao.com/item.htm?id=796226570709) | 2-3 |
+| Motor driver board | Drive 12V DC motors | [Tmall](https://detail.tmall.com/item.htm?id=755246866317) | 2 |
+| 12V-to-5V buck module | Power ESP32 / peripherals from the battery | [Taobao](https://item.taobao.com/item.htm?id=547992411877) | 1 |
+| 9-axis IMU | Pose sensing and heading correction | [Taobao](https://item.taobao.com/item.htm?id=731960643704) | 1 |
+
+These links are purchase references only. The public README keeps only product links and does not include account, order, or personal information.
+
+## Security Notes
+
+The example firmware uses placeholder Wi-Fi credentials:
+
+```cpp
+const char* WIFI_SSID = "YOUR_WIFI_SSID";
+const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+```
+
+Before flashing locally, replace them with your own Wi-Fi credentials. Do not commit real credentials to a public repository.
+
+## Step 1: Prepare Python
+
+Create a virtual environment in the project root:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+```
+
+Install the all-in-one dependencies:
+
+```bash
+pip install ultralytics opencv-python numpy websockets
+```
+
+If you only need basic robot control and do not use YOLO or voice control, you can skip `ultralytics` and `websockets` at first. For the full feature set, install everything.
+
+## Step 2: Configure Local Environment Variables
+
+Copy the example configuration:
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local`:
+
+```env
+DASHSCOPE_API_KEY=your_dashscope_api_key_here
+PUBLIC_IP=192.168.1.100
+ESP32_BASE_URL=http://192.168.1.11
+ROBOT_ESP32_URL=http://192.168.1.11
+REMOTE_ESP32_URL=http://192.168.1.60
+YOLO_CAMERA_ALLOWED_IP=192.168.1.71
+ROBOT_CAMERA_ALLOWED_IP=192.168.1.11
+TARGET_CLASSES=football, football gate
+```
+
+Notes:
+
+- `PUBLIC_IP` is the LAN IP of the computer running the Python WebUI.
+- `ESP32_BASE_URL` / `ROBOT_ESP32_URL` point to the robot ESP32.
+- `REMOTE_ESP32_URL` points to the physical joystick ESP32.
+- `YOLO_CAMERA_ALLOWED_IP` points to the independent YOLO camera ESP32.
+- `DASHSCOPE_API_KEY` is only required for voice recognition.
+
+`.env.local` is ignored by `.gitignore`.
+
+## Step 3: Wire the Robot Hardware
+
+### Encoders
+
+Motor 1:
+
+| Motor encoder wire | XIAO ESP32S3 |
+| --- | --- |
+| Encoder VCC | `3V3` |
+| Encoder GND | `GND` |
+| Phase A | `D0 / GPIO1` |
+| Phase B | `D1 / GPIO2` |
+
+Motor 2:
+
+| Motor encoder wire | XIAO ESP32S3 |
+| --- | --- |
+| Encoder VCC | `3V3` |
+| Encoder GND | `GND` |
+| Phase A | `D4 / GPIO5` |
+| Phase B | `D5 / GPIO6` |
+
+### DRV8871 Motor Drivers
+
+Motor 1:
+
+| DRV8871 | XIAO ESP32S3 |
+| --- | --- |
+| `IN1` | `D2 / GPIO3` |
+| `IN2` | `D3 / GPIO4` |
+| `GND` | `GND` |
+
+Motor 2:
+
+| DRV8871 | XIAO ESP32S3 |
+| --- | --- |
+| `IN1` | `D9 / GPIO8` |
+| `IN2` | `D10 / GPIO9` |
+| `GND` | `GND` |
+
+Connect each DRV8871 `POWER+ / POWER-` to the external motor power supply. ESP32, motor drivers, and motor power ground must be common. Do not power the motors directly from the ESP32 `3V3/5V` pins.
+
+### BNO080 / BNO085 IMU
+
+| IMU | XIAO ESP32S3 |
+| --- | --- |
+| `VIN` / `3V3` | `3V3` |
+| `GND` | `GND` |
+| `SDA` | `D6 / GPIO43` |
+| `SCL` | `D7 / GPIO44` |
+
+## Step 4: Flash the Robot Firmware
+
+1. Open `esp32/esp32_motor_control/esp32_motor_control.ino` in Arduino IDE.
+2. Install the `esp32` board package.
+3. Install `ArduinoWebsockets` and `SparkFun BNO080 Arduino Library`.
+4. Select `Seeed XIAO ESP32S3` as the board.
+5. Update the top configuration:
+
+```cpp
+const char* WIFI_SSID = "Your Wi-Fi SSID";
+const char* WIFI_PASSWORD = "Your Wi-Fi password";
+const char* PYTHON_SERVER_IP = "IP of the computer running all_in_one_webui.py";
+```
+
+6. Upload the firmware and open Serial Monitor to record the robot IP.
+7. Update `ESP32_BASE_URL` / `ROBOT_ESP32_URL` in `.env.local`.
+
+## Step 5: Flash the Physical Joystick Firmware
+
+Joystick wiring:
+
+| Joystick module | XIAO ESP32S3 |
+| --- | --- |
+| `GND` | `GND` |
+| `+5V` | `3.3V-OUT` |
+| `VRx` | `D10 / GPIO9` |
+| `VRy` | `D9 / GPIO8` |
+| `SW` | `D8 / GPIO7` |
+
+Flash steps:
+
+1. Open `physical_remote/esp32_joystick_remote/esp32_joystick_remote.ino`.
+2. Update `WIFI_SSID`, `WIFI_PASSWORD`, `ROBOT_ESP32_IP`, and `VOICE_SERVER_HOST`.
+3. Keep the joystick centered while powering on. The firmware calibrates the center automatically.
+4. Record the remote-controller IP from Serial Monitor.
+5. Update `REMOTE_ESP32_URL` in `.env.local`.
+
+The WebUI can enable physical-remote forwarding. Once enabled, the browser joystick is locked to avoid two control sources sending commands at the same time.
+
+## Step 6: Flash the Independent YOLO Camera
+
+1. Open `esp32_camera_yolo8_project/esp32_camera_stream/esp32_camera_stream.ino`.
+2. Update:
+
+```cpp
+const char* WIFI_SSID = "Your Wi-Fi SSID";
+const char* WIFI_PASSWORD = "Your Wi-Fi password";
+const char* CAMERA_WS_HOST = "IP of the computer running all_in_one_webui.py";
+```
+
+3. Upload the firmware.
+4. Record the camera IP from Serial Monitor.
+5. Update `YOLO_CAMERA_ALLOWED_IP` in `.env.local`.
+
+The camera connects to:
+
+```text
+ws://computer-ip:8081/ws/camera
+```
+
+If the camera is mounted on a drone, test it from a fixed overhead position first to confirm it can capture the whole field before flight testing.
+
+## Step 7: Start the All-in-One WebUI
+
+Run from the project root:
+
+```bash
+source .venv/bin/activate
+python all_in_one_webui.py
+```
+
+Open in browser:
+
+```text
+http://127.0.0.1:8000
+```
+
+Other devices on the LAN can open:
+
+```text
+http://your-computer-ip:8000
+```
+
+The page includes robot control, voice status, IMU assist parameters, robot camera, YOLOE camera, drone path planning, 3D IMU pose, and a physical remote twin.
+
+## Step 8: Use YOLO Automatic Path Control
+
+1. Make sure the independent YOLO camera stream appears in the WebUI.
+2. Set detection classes to:
+
+```text
+football, football gate
+```
+
+3. Click `Apply detection classes`.
+4. Wait until both the ball and gate box appear.
+5. Click `Enable automatic path` in the drone path section.
+
+The system will:
+
+- Filter `football` and `football gate` from YOLO detections.
+- Compute the center point of each box.
+- Pick the closest ball-gate pair if multiple candidates appear.
+- Convert the center-point vector into `throttle` and `steering`.
+- Continuously call the existing robot `/drive?throttle=&steering=` API.
+- Stop when detections are stale, the ball reaches the gate center, or automatic path is disabled.
+
+Common environment variables:
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `AUTO_PATH_ENABLED` | `0` | Enable automatic path on startup |
+| `AUTO_PATH_BALL_CLASSES` | `football, sports ball, ball` | Classes treated as the ball |
+| `AUTO_PATH_GATE_CLASSES` | `football gate, gate, goal` | Classes treated as the gate |
+| `AUTO_PATH_INTERVAL_MS` | `160` | Interval for sending path commands |
+| `AUTO_PATH_STALE_MS` | `900` | Stop if detection results are older than this |
+| `AUTO_PATH_MIN_SPEED` | `18` | Minimum speed |
+| `AUTO_PATH_MAX_SPEED` | `65` | Maximum speed |
+| `AUTO_PATH_STEERING_LIMIT` | `80` | Steering clamp |
+| `AUTO_PATH_DEADZONE_RATIO` | `0.04` | Center deadzone as image diagonal ratio |
+| `AUTO_PATH_ARRIVAL_RATIO` | `0.06` | Arrival radius as image diagonal ratio |
+
+## Voice Control
+
+Voice pipeline:
+
+```text
+Physical joystick ESP32 microphone -> voice_drive_realtime.py -> DashScope Realtime ASR -> all_in_one_webui.py -> robot /drive
+```
+
+Set `DASHSCOPE_API_KEY` in `.env.local`, then run:
+
+```bash
+python all_in_one_webui.py
+```
+
+`all_in_one_webui.py` starts the voice sidecar by default. Direction words such as forward, backward, left, right, stop, left-forward, and right-backward are converted into robot joystick vectors.
+
+## Android Controller
+
+`android-controller/` is an optional native Android project. Open it in Android Studio, wait for Gradle sync, then run it on a phone.
+
+It is designed for direct phone-to-ESP32 control on the same hotspot or LAN and does not require the Python WebUI. Android `build/`, `.gradle/`, and `local.properties` files should not be committed.
+
+## FAQ
+
+### YOLO is slow on the first run
+
+The first run may download model weights. Files such as `*.pt` are ignored by `.gitignore` and should not be uploaded to GitHub.
+
+### The WebUI cannot see the camera
+
+Check:
+
+1. Whether the ESP32 camera Serial Monitor says the WebSocket is connected.
+2. Whether `CAMERA_WS_HOST` is the computer LAN IP, not `127.0.0.1`.
+3. Whether `YOLO_CAMERA_ALLOWED_IP` / `ROBOT_CAMERA_ALLOWED_IP` in `.env.local` match the actual device IPs.
+
+### The robot does not move
+
+Check:
+
+1. Whether the ESP32 printed the correct IP in Serial Monitor.
+2. Whether `http://robot-ip/status` returns JSON in a browser.
+3. Whether the motors have a separate power supply.
+4. Whether ESP32, DRV8871, and the motor power supply share ground.
+5. Whether physical remote forwarding or automatic path control is enabled, which locks browser manual control.
+
+### Automatic path direction is reversed
+
+The drone / camera mounting orientation affects image coordinates. Fix the camera first and compare the overlay arrow with the robot motion. If left and right are reversed, rotate the camera mechanically or adjust the robot forward direction. A WebUI-level mirror parameter can also be added later.
+
+## API Summary
+
+All-in-One WebUI:
+
+- `GET /`: main page.
+- `GET /api/status`: proxy robot status.
+- `GET /api/imu-state`: IMU status.
+- `GET /api/camera-state`: robot camera status.
+- `GET /api/yolo-camera-state`: YOLO camera status.
+- `GET /api/yolo-state`: YOLO detection status.
+- `GET /api/auto-path-state`: automatic path status.
+- `POST /api/auto-path-config`: enable / disable automatic path or adjust parameters.
+- `POST /api/yolo-config`: update detection classes.
+- `POST /api/voice-drive`: voice direction command endpoint.
+- `POST /imu`: robot ESP32 IMU JSON upload endpoint.
+
+Robot ESP32:
+
+- `GET /status`
+- `POST /drive?throttle=0&steering=0`
+- `POST /pwm?motor=1&value=50`
+- `POST /stop`
+- `POST /config?...`
+
+Physical joystick ESP32:
+
+- `GET /status`
+- `POST /stop`
+- `POST /recalibrate`
+- `POST /forward?enabled=1`
+- `POST /orientation?rotate=90`
+- `POST /mode?assistMode=2`
 
