@@ -88,7 +88,6 @@ YOLO/无人机俯拍摄像头：
 
 ## 安全注意
 
-公开上传 GitHub 前不要提交真实 Wi-Fi 密码、API Key、`.env.local`、模型权重、Android `local.properties` 或构建产物。
 
 本仓库已经把示例固件里的 Wi-Fi 改成占位符：
 
@@ -98,7 +97,7 @@ const char* WIFI_SSID = "YOUR_WIFI_SSID";
 const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 ```
 
-你需要在本地烧录前改成自己的 Wi-Fi。不要把改过真实密码的版本提交到公开仓库。
+你需要在本地烧录前改成自己的 Wi-Fi。
 
 ## 第一步：准备 Python 环境
 
@@ -413,12 +412,5 @@ All-in-One WebUI：
 - `POST /orientation?rotate=90`
 - `POST /mode?assistMode=2`
 
-## GitHub 发布前检查清单
 
-- `.env.local` 不存在或未被提交。
-- 固件里没有真实 `WIFI_SSID` / `WIFI_PASSWORD`。
-- 没有提交 `*.pt`、`*.onnx`、`*.engine` 模型权重。
-- 没有提交 Android `build/`、`.gradle/`、`local.properties`。
-- 没有提交 `__pycache__/`、`.venv/`、`.DS_Store`。
-- README 中只保留示例 IP 和占位密钥。
 
