@@ -1,8 +1,6 @@
 # ESP32 足球机器人 All-in-One 控制台
 
-<video src="assets/project-demo.mkv" controls muted loop playsinline width="100%"></video>
-
-> 如果 GitHub 页面没有直接预览 `.mkv`，可以把 `assets/project-demo.mkv` 转成 `assets/project-demo.mp4` 后，把上面的路径改成 MP4。
+![项目演示动画](assets/project-demo.gif)
 
 这是一个面向小型足球机器人/小球车的完整实验项目：电脑运行一个 Python WebUI，同时管理小车电机、IMU 姿态、两路摄像头、YOLO/YOLOE 识别、实体摇杆、语音控制，以及无人机俯拍视角下的 `football` 到 `football gate` 自动路径控制。
 
