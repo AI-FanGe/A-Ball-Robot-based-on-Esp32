@@ -1,0 +1,34 @@
+.env.local
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local credentials and editor state
+*.local
+*.secret
+secrets.*
+
+# YOLO / ML model weights downloaded locally
+*.pt
+*.onnx
+*.engine
+
+# Android / Gradle generated files
+android-controller/.gradle/
+android-controller/build/
+android-controller/app/build/
+android-controller/local.properties
+*.apk
+*.aab
+
+# Node / frontend generated files
+node_modules/
+dist/
+build/
+
+# OS files
+.DS_Store
